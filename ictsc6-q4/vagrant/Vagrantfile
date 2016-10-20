@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |v|
+  v.vm.box = "kaorimatz/centos-6.8-x86_64"
+
+  v.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+  end
+
+  v.ssh.insert_key = false
+
+  v.vm.define "rabbit" do |r|
+    r.vm.network "private_network", ip: "192.168.11.3"
+  end
+
+  v.vm.define "sla" do |sla|
+    sla.vm.network "private_network", ip: "192.168.11.4"
+    sla.vm.provision "ansible" do |run|
+      run.limit = 'all'
+      run.playbook = "../ansible/playbook.yml"
+      run.groups = {
+        "rabbit" => ["master"],
+        "sla" => ["slave"]
+      }
+    end
+  end
+
+end

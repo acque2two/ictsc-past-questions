@@ -1,0 +1,47 @@
+---
+- name: ICTSC6 Q9 common
+  hosts: all
+  become: True
+  tasks:
+    - name: upgrade all packages
+      yum: name=* state=latest
+
+    - name: Install MySQL
+      yum: name=mysql-server state=latest
+
+    - name: Install libselinux-python
+      yum: name=libselinux-python state=latest
+
+    - name: Install MySQL-python
+      yum: name=MySQL-python state=latest
+
+    - name: enable MySQL
+      service: name=mysqld enabled=yes
+
+    # 一度起動して初期化処理をさせてあげないとリストアしたファイルを上書きされちゃう
+    - name: start MySQL
+      service: name=mysqld state=started
+
+    # リストアするので一旦止めてあげる
+    - name: stop MySQL
+      service: name=mysqld state=stopped
+
+    - name: $ rm -rf /var/lib/mysql/*
+      shell: /bin/rm -rf /var/lib/mysql/*
+
+    - name: unarchive mysql.tar
+      unarchive: src=mysql.tar dest=/var/lib/mysql/
+
+    - name: start MySQL
+      service: name=mysqld state=started
+
+    - name: copy mysqldump.sql
+      copy: src=mysqldump.sql dest=/tmp/mysqldump.sql
+
+    - name: import mysqldump.sql
+      mysql_db: >
+          login_user=root
+          login_password=root
+          name=all
+          state=import
+          target=/tmp/mysqldump.sql
