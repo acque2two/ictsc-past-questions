@@ -1,3 +1,3 @@
 - include: roles/common/playbook.yml
-- include: roles/master/playbook.yml
-- include: roles/slave/playbook.yml
+- include: roles/rabbit/playbook.yml
+#- include: roles/sla/playbook.yml

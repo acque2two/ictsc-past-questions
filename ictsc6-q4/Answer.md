@@ -2,9 +2,7 @@
 
 ## 再現playbookでの解答
 
-* master
-  - tcp/3306 ポートが空いていない
-  - replユーザのログイン可能HOSTの設定ミス
+* 
 
 * slave
   - master_hostの設定ミス

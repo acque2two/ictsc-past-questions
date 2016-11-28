@@ -1,0 +1,53 @@
+# chkconfig:   - 85 15
+# description:  SUGOI \
+#               Rabbit horse Server
+# processname: rabbit_horse
+
+# Source function library.
+source /etc/rc.d/init.d/functions
+
+server="python /usr/local/bin/rhorse/main.py"
+prog=$(basename $server)
+
+start() {
+    cd /usr/local/bin/rhorse
+    echo -n $"Starting SERVER: "
+    nohup $server &
+    retval=$?
+    echo
+    return $retval
+}
+
+stop() {
+    echo -n $"Stopping SERVER: "
+    killall python
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && rm -f $lockfile
+    return $retval
+}
+
+restart() {
+    configtest_q || return 6
+    stop
+    start
+}
+
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart|configtest|reopen_logs)
+        $1
+        ;;
+    *)
+        echo $"Usage: $0 
+{start|stop|restart}"
+        exit 2
+esac

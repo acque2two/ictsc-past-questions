@@ -1,0 +1,62 @@
+---
+- name: ICTSC6 Q4 master
+  hosts: rabbit
+  become: True
+  tasks:
+
+    - name: create partition table GPT for disk2
+      command: parted --script --align optimal /dev/sdb mklabel gpt
+
+    - name: create partition for disk for disk2
+      command: parted --script --align optimal /dev/sdb mkpart linux ext4 1MiB 1GiB
+
+    - name: format partition in disk2 partition 1
+      command: mkfs.ext4 /dev/sdb1 -i 3000000
+
+    - name: mkdir /horse
+      command: mkdir /horse
+
+    - name: mount disk
+      mount: name=/horse src=/dev/sdb1 fstype=ext4 state=mounted
+
+    - name: make data dir
+      file: path=/horse/data state=directory owner=root group=root mode=0755
+
+    - name: copy data file generator
+      copy: >
+          src=file_make.sh
+          dest=/tmp/datagen.sh
+          owner=root
+          mode=0755
+
+    - name: exec file generator
+      command: /bin/bash /tmp/datagen.sh
+
+    - name: copy server files
+      copy: >
+          src=rhorse
+          dest=/usr/local/bin
+          owner=root
+          mode=0755
+
+    - name: run server provisioner
+      command: pip install bottle
+
+    - name: copy server runner
+      copy: >
+          src=server.init
+          dest=/etc/init.d/rabbit_horse
+          owner=root
+          mode=0500
+    
+    - name: start server
+      shell: /etc/init.d/rabbit_horse start
+
+    - name: exec copied generator
+      shell: /tmp/datagen.sh
+
+    - name: firewall disabling
+      shell: rm -fR /etc/sysconfig/iptables
+
+    - name: firewall disable
+      shell: iptables -F
